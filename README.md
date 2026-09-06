@@ -20,9 +20,36 @@ The four CRUD operations, in store terms:
 
 ---
 
+## The easy way: run `start.bat`
+
+If you are on Windows, you do not have to follow the steps below one by one. Download the
+code, then **double-click `start.bat`** in the project folder. It does everything:
+
+1. Checks for the .NET SDK, Node.js and PostgreSQL, and offers to install anything missing.
+2. Tests the PostgreSQL password and asks you for it if the saved one does not work. Your
+   answer is stored outside the project, so it never ends up on GitHub.
+3. Runs `npm install`, but only the first time — later runs skip it.
+4. Builds and starts the API, starts the web app, and opens the page in your browser.
+
+It is safe to run again any time; anything already done is detected and skipped. Two windows
+open, *Grocery API* and *Grocery Web App* — close them to stop the app.
+
+If something else on your PC already uses port 4200, run it from a terminal with a different
+port instead:
+
+```bash
+.\start.bat -ClientPort 4300
+```
+
+The rest of this README explains the same steps by hand, in case you want to do it yourself or
+the script runs into something it cannot fix.
+
+---
+
 ## 1. Install what you need
 
 You only have to do this part once. If you already have any of these, skip it.
+`start.bat` can install them for you, so this section is only for doing it by hand.
 
 ### .NET 8 SDK
 
@@ -48,7 +75,8 @@ node -v
 npm -v
 ```
 
-Node 20 or newer is required.
+Node 22.22.3 or newer is required (the current LTS download is fine). Angular refuses to
+start on anything older.
 
 ### PostgreSQL
 
@@ -231,8 +259,17 @@ Terminal 1 is not running, or it is running on a different port than
 Run the client on another port: `npm start -- --port 4300`.
 
 **`npm install` fails or the client will not start**
-Check `node -v` is 20 or newer. If it still fails, delete the `Grocery.Client/node_modules`
+Check `node -v` is 22.22.3 or newer. If it still fails, delete the `Grocery.Client/node_modules`
 folder and run `npm install` again.
+
+**`start.bat` opens and closes straight away**
+Run it from a terminal instead so the message stays visible:
+`powershell -ExecutionPolicy Bypass -File setup.ps1`
+
+**`start.bat` says a port is being used by another program**
+Something unrelated is on that port. Close it, or for the web app pick another port with
+`.\start.bat -ClientPort 4300`. The script refuses to continue rather than show you the wrong
+app.
 
 **`'dotnet' is not recognized`**
 The .NET SDK is not installed, or the terminal was open before you installed it. Close the
