@@ -1,0 +1,194 @@
+<div class="page-heading">
+  <div>
+    <p class="eyebrow">Sari-sari store</p>
+    <h1>Inventory</h1>
+  </div>
+  <button type="button" class="secondary" (click)="refresh()" [disabled]="busy()">
+    {{ loading() ? 'Refreshing…' : 'Refresh' }}
+  </button>
+</div>
+
+<div class="stats">
+  <div class="stat card">
+    <span class="stat-label">Product lines</span>
+    <strong>{{ products().length }}</strong>
+  </div>
+  <div class="stat card">
+    <span class="stat-label">Running low</span>
+    <strong [class.attention]="lowStockCount() > 0">{{ lowStockCount() }}</strong>
+  </div>
+  <div class="stat card">
+    <span class="stat-label">Expired or expiring</span>
+    <strong [class.attention]="expiringCount() > 0">{{ expiringCount() }}</strong>
+  </div>
+  <div class="stat card">
+    <span class="stat-label">Stock value at retail</span>
+    <strong>{{ retailValue() | currency: 'PHP' : '₱' : '1.2-2' }}</strong>
+  </div>
+</div>
+<p class="muted stats-note">Totals cover the rows shown below.</p>
+
+@if (feedback(); as message) {
+  <div
+    class="message"
+    [class.error]="message.kind === 'error'"
+    [class.success]="message.kind === 'success'"
+    [attr.role]="message.kind === 'error' ? 'alert' : 'status'"
+  >
+    {{ message.text }}
+  </div>
+}
+
+<section class="card form-card" aria-labelledby="form-heading">
+  <app-product-form
+    [editing]="editing()"
+    [saving]="saving()"
+    [busy]="busy()"
+    (save)="save($event)"
+    (cancelled)="cancelEdit()"
+  />
+</section>
+
+<section class="card list-card" aria-labelledby="list-heading" [attr.aria-busy]="loading()">
+  <div class="list-heading">
+    <div>
+      <p class="eyebrow">Stock on hand</p>
+      <h2 id="list-heading">Products</h2>
+    </div>
+
+    <div class="controls">
+      <div class="search">
+        <label class="sr-only" for="search">Search by name or barcode</label>
+        <input
+          id="search"
+          type="search"
+          [value]="search()"
+          (input)="onSearch($any($event.target).value)"
+          placeholder="Search name or barcode…"
+          autocomplete="off"
+        />
+      </div>
+
+      <div class="filters" role="group" aria-label="Filter stock">
+        @for (option of filters; track option.value) {
+          <button
+            type="button"
+            [class.active]="filter() === option.value"
+            [attr.aria-pressed]="filter() === option.value"
+            (click)="setFilter(option.value)"
+            [disabled]="busy()"
+          >
+            {{ option.label }}
+          </button>
+        }
+      </div>
+    </div>
+  </div>
+
+  @if (pendingDelete(); as product) {
+    <div class="delete-confirm" role="alert">
+      <div>
+        <p class="delete-question">Remove {{ product.name }} from the inventory?</p>
+        <p class="delete-note">
+          The product line and its stock record are deleted. This cannot be undone.
+        </p>
+      </div>
+      <div class="delete-actions">
+        <button type="button" class="secondary" (click)="cancelDelete()" [disabled]="deleting()">
+          Keep it
+        </button>
+        <button type="button" class="danger" (click)="confirmDelete()" [disabled]="deleting()">
+          {{ deleting() ? 'Removing…' : 'Remove product' }}
+        </button>
+      </div>
+    </div>
+  }
+
+  @if (loading() && !products().length) {
+    <p class="placeholder" role="status">Loading inventory…</p>
+  } @else if (!products().length) {
+    <div class="placeholder">
+      @if (search() || filter() !== 'All') {
+        <p>No products match this view.</p>
+        <p class="muted">Try a different search or switch back to all stock.</p>
+      } @else {
+        <p>The inventory is empty.</p>
+        <p class="muted">Add your first delivery using the form above.</p>
+      }
+    </div>
+  } @else {
+    <div class="table-scroll">
+      <table>
+        <thead>
+          <tr>
+            <th scope="col">Product</th>
+            <th scope="col">Barcode</th>
+            <th scope="col" class="num">Stock</th>
+            <th scope="col" class="num">Wholesale</th>
+            <th scope="col" class="num">Retail</th>
+            <th scope="col">Expiry</th>
+            <th scope="col"><span class="sr-only">Actions</span></th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (product of products(); track product.id) {
+            <tr [class.pending]="pendingDelete()?.id === product.id">
+              <td>
+                <span class="product-name">{{ product.name }}</span>
+                <span class="muted block">{{ product.category ?? 'Uncategorised' }}</span>
+              </td>
+              <td class="mono">{{ product.barcode }}</td>
+              <td class="num">
+                <span class="stock">{{ product.quantity }}</span>
+                @if (isLowStock(product)) {
+                  <span class="badge warn">Low</span>
+                }
+                <span class="muted block">Reorder at {{ product.reorderLevel }}</span>
+              </td>
+              <td class="num">{{ product.wholesalePrice | currency: 'PHP' : '₱' : '1.2-2' }}</td>
+              <td class="num">{{ product.retailPrice | currency: 'PHP' : '₱' : '1.2-2' }}</td>
+              <td>
+                @switch (expiryState(product)) {
+                  @case ('none') {
+                    <span class="muted">No expiry</span>
+                  }
+                  @case ('expired') {
+                    <span class="block">{{ product.expiryDate | date: 'mediumDate' }}</span>
+                    <span class="badge danger">Expired</span>
+                  }
+                  @case ('soon') {
+                    <span class="block">{{ product.expiryDate | date: 'mediumDate' }}</span>
+                    <span class="badge warn">Expiring soon</span>
+                  }
+                  @default {
+                    <span>{{ product.expiryDate | date: 'mediumDate' }}</span>
+                  }
+                }
+              </td>
+              <td class="actions">
+                <button
+                  type="button"
+                  class="text-button"
+                  (click)="edit(product)"
+                  [disabled]="busy()"
+                  [attr.aria-label]="'Edit ' + product.name"
+                >
+                  Edit
+                </button>
+                <button
+                  type="button"
+                  class="text-button destructive"
+                  (click)="askToDelete(product)"
+                  [disabled]="busy()"
+                  [attr.aria-label]="'Delete ' + product.name"
+                >
+                  Delete
+                </button>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+</section>

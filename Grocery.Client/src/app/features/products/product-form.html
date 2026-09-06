@@ -1,0 +1,96 @@
+<div class="panel-heading">
+  <div>
+    <p class="eyebrow">{{ isEditing() ? 'Update stock record' : 'New delivery' }}</p>
+    <h2 id="form-heading">{{ isEditing() ? 'Edit product' : 'Add product' }}</h2>
+  </div>
+  <p class="muted">Fields marked * are required.</p>
+</div>
+
+<form [formGroup]="form" (ngSubmit)="submit()">
+  <fieldset [disabled]="busy()">
+    <div class="grid">
+      <div class="span-2">
+        <label for="name">Product name *</label>
+        <input
+          id="name"
+          formControlName="name"
+          maxlength="120"
+          placeholder="e.g. 555 Sardines 155g"
+          autocomplete="off"
+        />
+        <app-form-error [control]="form.controls.name" label="Product name" />
+      </div>
+
+      <div>
+        <label for="barcode">Barcode *</label>
+        <input
+          id="barcode"
+          formControlName="barcode"
+          maxlength="32"
+          placeholder="e.g. 4800016641107"
+          autocomplete="off"
+          inputmode="numeric"
+        />
+        <app-form-error [control]="form.controls.barcode" label="Barcode" />
+      </div>
+
+      <div>
+        <label for="category">Category</label>
+        <input
+          id="category"
+          formControlName="category"
+          maxlength="60"
+          placeholder="e.g. Canned goods"
+          autocomplete="off"
+        />
+        <app-form-error [control]="form.controls.category" label="Category" />
+      </div>
+
+      <div>
+        <label for="quantity">Quantity in stock *</label>
+        <input id="quantity" type="number" formControlName="quantity" min="0" step="1" />
+        <app-form-error [control]="form.controls.quantity" label="Quantity" />
+      </div>
+
+      <div>
+        <label for="reorderLevel">Reorder level *</label>
+        <input id="reorderLevel" type="number" formControlName="reorderLevel" min="0" step="1" />
+        <small class="hint">Flagged as low stock at or below this count.</small>
+        <app-form-error [control]="form.controls.reorderLevel" label="Reorder level" />
+      </div>
+
+      <div>
+        <label for="wholesalePrice">Wholesale price *</label>
+        <input
+          id="wholesalePrice"
+          type="number"
+          formControlName="wholesalePrice"
+          min="0"
+          step="0.01"
+        />
+        <app-form-error [control]="form.controls.wholesalePrice" label="Wholesale price" />
+      </div>
+
+      <div>
+        <label for="retailPrice">Retail price *</label>
+        <input id="retailPrice" type="number" formControlName="retailPrice" min="0" step="0.01" />
+        <app-form-error [control]="form.controls.retailPrice" label="Retail price" />
+      </div>
+
+      <div>
+        <label for="expiryDate">Expiry date</label>
+        <input id="expiryDate" type="date" formControlName="expiryDate" />
+        <small class="hint">Leave empty for items that do not expire.</small>
+      </div>
+    </div>
+
+    <div class="form-actions">
+      @if (isEditing()) {
+        <button type="button" class="secondary" (click)="cancelled.emit()">Cancel</button>
+      }
+      <button class="primary" type="submit" [disabled]="busy()">
+        {{ saving() ? 'Saving…' : isEditing() ? 'Save changes' : 'Add product' }}
+      </button>
+    </div>
+  </fieldset>
+</form>

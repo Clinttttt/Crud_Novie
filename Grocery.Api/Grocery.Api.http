@@ -1,0 +1,54 @@
+@Grocery.Api_HostAddress = http://localhost:5199
+
+### List the whole inventory
+GET {{Grocery.Api_HostAddress}}/api/products
+Accept: application/json
+
+### Search by name or barcode
+GET {{Grocery.Api_HostAddress}}/api/products?search=sardines
+Accept: application/json
+
+### Only the items that need restocking
+GET {{Grocery.Api_HostAddress}}/api/products?filter=LowStock
+Accept: application/json
+
+### Items already expired or expiring within 30 days
+GET {{Grocery.Api_HostAddress}}/api/products?filter=Expiring
+Accept: application/json
+
+### One product
+GET {{Grocery.Api_HostAddress}}/api/products/1
+Accept: application/json
+
+### Add a delivery
+POST {{Grocery.Api_HostAddress}}/api/products
+Content-Type: application/json
+
+{
+  "name": "555 Sardines 155g",
+  "barcode": "4800016641107",
+  "category": "Canned goods",
+  "quantity": 50,
+  "reorderLevel": 12,
+  "wholesalePrice": 21.50,
+  "retailPrice": 27.00,
+  "expiryDate": "2027-08-31"
+}
+
+### Update it (new price, fewer on the shelf)
+PUT {{Grocery.Api_HostAddress}}/api/products/1
+Content-Type: application/json
+
+{
+  "name": "555 Sardines 155g",
+  "barcode": "4800016641107",
+  "category": "Canned goods",
+  "quantity": 43,
+  "reorderLevel": 12,
+  "wholesalePrice": 22.00,
+  "retailPrice": 28.50,
+  "expiryDate": "2027-08-31"
+}
+
+### Remove the product line
+DELETE {{Grocery.Api_HostAddress}}/api/products/1

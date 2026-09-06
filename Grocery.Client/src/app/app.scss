@@ -1,0 +1,70 @@
+:host {
+  display: block;
+  min-height: 100dvh;
+}
+
+header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  height: 60px;
+  /* Keeps the bar full width while its content lines up with the page below. */
+  padding: 0 max(32px, calc((100% - 1240px) / 2));
+  border-bottom: 1px solid var(--line);
+  background: var(--surface);
+}
+
+main {
+  width: 100%;
+  max-width: 1240px;
+  margin: 0 auto;
+  padding: 26px 32px 48px;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--ink);
+  font-size: 1rem;
+  font-weight: 700;
+  letter-spacing: -0.015em;
+  text-decoration: none;
+}
+
+.brand-mark {
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 8px;
+  background: var(--accent);
+  color: white;
+}
+
+.brand-mark svg {
+  width: 17px;
+  height: 17px;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.header-note {
+  color: var(--ink-soft);
+  font-size: 0.78rem;
+}
+
+@media (max-width: 640px) {
+  header {
+    padding: 0 18px;
+  }
+
+  main {
+    padding-right: 18px;
+    padding-left: 18px;
+  }
+
+  .header-note {
+    display: none;
+  }
+}
